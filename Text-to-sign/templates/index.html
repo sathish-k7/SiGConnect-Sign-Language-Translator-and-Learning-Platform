@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Sign Language Translator</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Poppins & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    
+    <!-- CWASA Player CSS and JS -->
+    <link rel="stylesheet" href="{{url_for('static',filename='css/cwasa.css')}}">
+    <script type="text/javascript" src="{{url_for('static',filename='js/allcsa.js')}}"></script>
+
+    <script language="javascript">
+        // Initial configuration
+        var initCfg = {
+            "avsbsl" : ["marc"],
+            "avSettings" : { "avList": "avsbsl", "initAv": "marc" }
+        };
+
+        var sigmlList = null;
+        var tuavatarLoaded = false;
+        var playerAvailableToPlay = true;
+    </script>
+
+<style>
+    /* Hide CWASA controls we don't need */
+    .bttnPlaySiGMLURL, .bttnStop, .CWASASpeed, .txtSF, .txtGloss, .spanInfo, .txtSiGMLURL, .CWASAAvMenu {
+        display: none !important;
+    }
+    
+    /* Custom animations */
+    @keyframes pulse-glow {
+        0%, 100% { box-shadow: 0 0 20px rgba(45, 76, 247, 0.6); }
+        50% { box-shadow: 0 0 40px rgba(106, 227, 249, 0.8); }
+    }
+    
+    .pulse-glow {
+        animation: pulse-glow 2s infinite;
+    }
+
+    /* Colorful Button Effect */
+    .colorful-button {
+        background-color: #18181b;
+        position: relative;
+    }
+
+    .colorful-button::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to right, #6366f1, #a855f7, #ec4899);
+        opacity: 0.4;
+        filter: blur(8px);
+        transition: opacity 0.5s;
+    }
+
+    .colorful-button:hover::before {
+        opacity: 0.8;
+    }
+</style>
+
+</head>
+<body onload="CWASA.init(initCfg);" class="bg-white min-h-screen">
+
+<script language="javascript">
+function playText(stext) {
+    CWASA.playSiGMLText(stext);
+}
+
+function setSiGMLURL(sigmlURL) {
+    var loc = window.location.href;
+    var locDir = loc.substring(0, loc.lastIndexOf('/'));
+    sigmlURL = locDir + "/" + sigmlURL;
+    document.getElementById("URLText").value = sigmlURL;
+    return sigmlURL;
+}
+
+function startPlayer(sigmlURL) {
+    sigmlURL = setSiGMLURL(sigmlURL);
+    CWASA.getLogger("myLog","warn");
+    CWASA.playSiGMLURL(sigmlURL);
+    CWASA.getLogger("myLog","warn");
+}
+</script>
+
+<div class="h-full">
+    <!-- Professional Grid Layout: Left Input, Right Avatar -->
+    <div class="grid lg:grid-cols-2 gap-0 h-full" style="min-height: 800px;">
+        
+        <!-- LEFT SIDE: Input Section -->
+        <div class="bg-gradient-to-br from-gray-50 to-blue-50 p-8 lg:p-12 flex flex-col justify-center">
+            <div class="max-w-lg mx-auto w-full">
+                <h2 class="text-[32px] font-bold text-[#0E0E10] mb-3 tracking-tight" style="font-family: 'Poppins', sans-serif; letter-spacing: -0.01em;">
+                    Enter Your Text
+                </h2>
+                <p class="text-[15px] text-[#6F6F7B] mb-8 leading-relaxed" style="font-family: 'Inter', sans-serif;">
+                    Type any English sentence and watch it translated into Indian Sign Language
+                </p>
+
+                <form method="POST" id='form'>
+                    <div class="mb-6">
+                        <label class="block text-[#0E0E10] text-[14px] font-semibold mb-3" style="font-family: 'Inter', sans-serif;">
+                            English Text
+                        </label>
+                        <textarea 
+                            id="text" 
+                            name="text" 
+                            rows="5"
+                            autocomplete="off"
+                            placeholder="Example: I love apples"
+                            class="w-full px-5 py-4 border-2 border-[#E5E7EB] rounded-2xl focus:outline-none focus:border-[#2D4CF7] transition-all text-[15px] resize-none shadow-sm bg-white text-[#0E0E10]"
+                            style="font-family: 'Inter', sans-serif;"
+                        ></textarea>
+                    </div>
+
+                    <!-- Translate Button with Colorful Effect -->
+                    <button 
+                        id="submit" 
+                        type="button"
+                        class="colorful-button w-full py-4 rounded-2xl font-semibold text-[15px] transition-all transform text-white shadow-lg hover:shadow-xl relative overflow-hidden"
+                        style="font-family: 'Inter', sans-serif;"
+                    >
+                        <span class="relative z-10">Translate to Sign Language →</span>
+                    </button>
+                </form>
+
+                <!-- Info -->
+                <div class="mt-8 text-[13px] text-[#6F6F7B]" style="font-family: 'Inter', sans-serif;">
+                    <p>Powered by Stanza NLP • CWASA Avatar</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT SIDE: Avatar Animation Section -->
+        <div class="bg-gradient-to-br from-[#0E0E10] to-[#1a1a1f] p-8 lg:p-12 flex flex-col justify-center items-center relative overflow-hidden">
+            <!-- Decorative Background -->
+            <div class="absolute inset-0 opacity-10">
+                <div class="absolute top-0 left-0 w-96 h-96 bg-[#2D4CF7] rounded-full filter blur-3xl animate-pulse"></div>
+                <div class="absolute bottom-0 right-0 w-96 h-96 bg-[#6AE3F9] rounded-full filter blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
+            </div>
+
+            <div class="relative z-10 w-full max-w-2xl">
+                <!-- Header -->
+                <div class="text-center mb-6">
+                    <h3 class="text-[24px] font-bold text-white mb-2 tracking-tight" style="font-family: 'Poppins', sans-serif; letter-spacing: -0.01em;">
+                        3D Sign Language Avatar
+                    </h3>
+                    <p class="text-gray-300 text-[14px]" style="font-family: 'Inter', sans-serif;">
+                        Watch the translation come to life
+                    </p>
+                </div>
+
+                <!-- CWASA Avatar Container -->
+                <div class="relative bg-white/5 backdrop-blur-sm rounded-3xl p-6 border border-white/10 shadow-2xl">
+                    <div class="CWASAAvatar av0 mx-auto" style="width: 100%; height: 450px; background: transparent;"></div>
+                    
+                    <!-- Current Word Display -->
+                    <div class="curr_playing absolute top-12 left-1/2 transform -translate-x-1/2 bg-[#2D4CF7] text-white px-8 py-3 rounded-full shadow-2xl pulse-glow hidden z-20">
+                        <span class="text-[18px] font-bold curr_word_playing" style="font-family: 'Poppins', sans-serif;"></span>
+                    </div>
+                </div>
+
+                <!-- ISL Text Display (Moved to Right Side) -->
+                <div class="islOutput mt-6 p-5 bg-white/10 backdrop-blur-sm rounded-2xl border-2 border-[#6AE3F9]/30 shadow-lg hidden">
+                    <p class="text-[13px] font-semibold text-[#6AE3F9] mb-2 uppercase tracking-wide" style="font-family: 'Inter', sans-serif;">ISL Translation:</p>
+                    <p id="isl_text" class="text-[16px] text-white font-medium leading-relaxed" style="font-family: 'Inter', sans-serif;"></p>
+                </div>
+
+                <!-- Hidden CWASA controls -->
+                <div class="hidden">
+                    <span class="CWASAAvMenu av0"></span>
+                    <input type="button" value="Sign" class="bttnPlaySiGMLURL av0" />
+                    <input type="button" value="Stop" class="bttnStop av0" />
+                    <span class="CWASASpeed av0"></span>
+                    <input class="txtSF av0" value="0/0" type="text">
+                    <input class="txtGloss av0" value="[none]" type="text">
+                    <span class="spanInfo av0">
+                        <input type="text" class="statusExtra av0">
+                    </span>
+                    <input type="text" id="URLText" class="txtSiGMLURL av0" value="" />
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script type="text/javascript" src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+<script>
+// Show ISL output when translation completes
+$(document).ready(function() {
+    console.log("Template jQuery loaded, CWASA should be available");
+    console.log("playerAvailableToPlay:", typeof window.playerAvailableToPlay, window.playerAvailableToPlay);
+    console.log("tuavatarLoaded:", typeof window.tuavatarLoaded, window.tuavatarLoaded);
+    console.log("startPlayer function:", typeof window.startPlayer);
+    
+    // Add a direct button click handler to ensure it works
+    $('#submit').off('click').on('click', function() {
+        console.log("Template button click handler triggered");
+        let input = $('#text').val();
+        console.log("INPUT is ", input);
+
+        if(!input.trim()) {
+            alert("Please enter some text");
+            return;
+        }
+
+        // ajax request to get the response from flask in json and play the words
+        $.ajax({
+            url:'/',
+            type:'POST',
+            data:{text:input},
+            success: function(res) {
+                console.log("AJAX success:", res);
+                console.log("About to call convert_json_to_arr");
+                window.convert_json_to_arr(res);
+                
+                console.log("About to call play_each_word");
+                console.log("playerAvailableToPlay before play_each_word:", window.playerAvailableToPlay);
+                console.log("wordArray:", window.wordArray);
+                window.play_each_word();
+                
+                console.log("About to call display_isl_text");
+                window.display_isl_text(res);
+            },
+            error: function(xhr) {
+                console.log("AJAX error:", xhr);
+                alert("Error occurred: " + xhr.status);
+            }
+        });
+    });
+    
+    // Debug CWASA readiness every 5 seconds
+    setInterval(function() {
+        console.log("CWASA status - playerAvailableToPlay:", window.playerAvailableToPlay, "tuavatarLoaded:", window.tuavatarLoaded);
+    }, 5000);
+    
+    // Override display functions to work with new UI
+    const originalDisplayISL = window.display_isl_text;
+    if (originalDisplayISL) {
+        window.display_isl_text = function(words) {
+            originalDisplayISL(words);
+            document.querySelector('.islOutput').classList.remove('hidden');
+        };
+    }
+    
+    const originalDisplayWord = window.display_curr_word;
+    if (originalDisplayWord) {
+        window.display_curr_word = function(word) {
+            let container = document.querySelector(".curr_playing");
+            let p = document.querySelector(".curr_word_playing");
+            p.textContent = word;
+            container.classList.remove('hidden');
+        };
+    }
+    
+    const originalDisplayError = window.display_err_message;
+    if (originalDisplayError) {
+        window.display_err_message = function() {
+            // Only show error if there's a real error (check statusExtra)
+            let errtext = document.querySelector(".statusExtra").value || "";
+            if (errtext.indexOf("invalid") !== -1 || errtext.indexOf("error") !== -1) {
+                let container = document.querySelector(".curr_playing");
+                let p = document.querySelector(".curr_word_playing");
+                p.textContent = "Error occurred";
+                container.classList.remove('hidden');
+                container.classList.remove('pulse-glow');
+                container.classList.add('bg-red-600');
+            }
+            // Otherwise, suppress the false error message
+        };
+    }
+    
+    // Hide current word when animation completes
+    setInterval(function() {
+        if (window.playerAvailableToPlay) {
+            document.querySelector(".curr_playing").classList.add('hidden');
+            let container = document.querySelector(".curr_playing");
+            container.classList.remove('bg-red-600');
+            if (!container.classList.contains('pulse-glow')) {
+                container.classList.add('pulse-glow');
+            }
+        }
+    }, 1000);
+});
+
+// Set initial SIGML
+setSiGMLURL("SignFiles/hello.sigml");
+</script>
+
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Animation</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <form id="form">
+        <input id="text" type="text" placeholder="Type hello" />
+        <button id="submit" type="button">Test Submit</button>
+    </form>
+    
+    <div id="debug-output"></div>
+    
+    <script>
+        console.log("Debug script loaded");
+        
+        // Test if jQuery is working
+        $(document).ready(function() {
+            console.log("jQuery ready");
+            
+            $('#submit').click(function() {
+                console.log("Submit clicked");
+                
+                let input = $('#text').val();
+                console.log("Input is:", input);
+                
+                // Test AJAX
+                $.ajax({
+                    url: '/',
+                    type: 'POST',
+                    data: { text: input },
+                    success: function(res) {
+                        console.log("AJAX Success:", res);
+                        $('#debug-output').html(JSON.stringify(res));
+                    },
+                    error: function(xhr) {
+                        console.log("AJAX Error:", xhr);
+                        $('#debug-output').html("Error: " + xhr.status);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

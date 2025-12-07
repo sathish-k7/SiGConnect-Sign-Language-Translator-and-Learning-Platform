@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CWASA Test</title>
+    <link rel="stylesheet" href="http://localhost:5001/static/css/cwasa.css" />
+</head>
+<body>
+    <h1>Testing CWASA Avatar</h1>
+    <div id="status"></div>
+    
+    <div class="CWASAAvatar av0" style="width: 600px; height: 400px; border: 2px solid black;"></div>
+    
+    <button onclick="testSign()">Test Sign</button>
+    
+    <script type="text/javascript" src="http://localhost:5001/static/js/allcsa.js"></script>
+    <script>
+        const status = document.getElementById('status');
+        
+        window.onload = function() {
+            status.innerHTML = 'Page loaded. Checking CWASA...';
+            
+            setTimeout(() => {
+                if (window.CWASA) {
+                    status.innerHTML = 'CWASA found! Initializing...';
+                    
+                    const initCfg = {
+                        "avsbsl": ["marc"],
+                        "avSettings": { "avList": "avsbsl", "initAv": "marc" }
+                    };
+                    
+                    try {
+                        CWASA.init(initCfg);
+                        status.innerHTML = 'CWASA initialized successfully!';
+                    } catch (error) {
+                        status.innerHTML = 'Error initializing: ' + error.message;
+                        console.error(error);
+                    }
+                } else {
+                    status.innerHTML = 'CWASA not found!';
+                }
+            }, 1000);
+        };
+        
+        function testSign() {
+            CWASA.playSiGMLURL('http://localhost:5001/static/SignFiles/hello.sigml');
+        }
+    </script>
+</body>
+</html>
